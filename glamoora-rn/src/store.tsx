@@ -2,15 +2,17 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { C } from './theme';
-import { getDB, initDB, me, setSession } from './db/core';
-import type { DB } from './types';
+import { repo } from './db';
+import type { AnalyticsEventName, DB } from './types';
 
 interface AppCtx {
   ready: boolean;
   db: DB;
-  user: ReturnType<typeof me>;
+  user: ReturnType<typeof repo.me>;
   version: number;
   bump: () => void;
+  /** Fire a product-analytics event (PRD §16). Safe to call from any screen. */
+  track: (name: AnalyticsEventName, meta?: Record<string, string | number | boolean>, ids?: { providerId?: string; bookingId?: string }) => void;
   login: (email: string, pass: string) => string | null;
   logout: () => void;
   register: (args: {
@@ -38,7 +40,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      await initDB();
+      await repo.init();
       setReady(true);
       SplashScreen.hideAsync().catch(() => {});
     })();
@@ -53,10 +55,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(
     (email: string, pass: string): string | null => {
-      const d = getDB();
+      const d = repo.snapshot();
       const u = d.users.find((x) => x.email.toLowerCase() === email.trim().toLowerCase() && x.password === pass);
       if (!u) return 'Invalid email or password. Try a demo account below.';
-      setSession(u.id);
+      repo.setSession(u.id);
       bump();
       return null;
     },
@@ -64,9 +66,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   const logout = useCallback(() => {
-    setSession(null);
+    repo.setSession(null);
     bump();
   }, [bump]);
+
+  const track = useCallback(
+    (name: AnalyticsEventName, meta?: Record<string, string | number | boolean>, ids?: { providerId?: string; bookingId?: string }) => {
+      try {
+        repo.track({ name, meta, providerId: ids?.providerId, bookingId: ids?.bookingId });
+      } catch {
+        /* telemetry must never break a user action */
+      }
+    },
+    []
+  );
 
   const register = useCallback(
     (args: {
@@ -80,7 +93,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       area?: string;
       cats?: string[];
     }): string | null => {
-      const d = getDB();
+      const d = repo.snapshot();
       const name = args.name.trim();
       const email = args.email.trim().toLowerCase();
       if (name.length < 2) return 'Please enter your name.';
@@ -121,7 +134,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           phone: args.phone,
         });
       }
-      setSession(id);
+      repo.setSession(id);
+      repo.track({ name: args.role === 'provider' ? 'provider_signup' : 'signup', actorId: id });
+      if (args.role === 'provider') {
+        const created = repo.myProfile();
+        if (created) repo.track({ name: 'profile_completed', actorId: id, providerId: created.id });
+      }
       bump();
       return null;
     },
@@ -129,8 +147,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo<AppCtx>(
-    () => ({ ready, db: getDB(), user: me(), version, bump, login, logout, register, toast, showToast }),
-    [ready, version, toast, bump, login, logout, register, showToast]
+    () => ({ ready, db: repo.snapshot(), user: repo.me(), version, bump, track, login, logout, register, toast, showToast }),
+    [ready, version, toast, bump, track, login, logout, register, showToast]
   );
 
   return (
