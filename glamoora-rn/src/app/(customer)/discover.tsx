@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View, type TextStyle, type ViewStyle } from 'react-native';
 import { ProviderCard } from '../../components/cards';
+import { MapCanvas, MapPinCard, type MapPin } from '../../components/mapview';
 import { TopBar } from '../../components/topbar';
-import { Btn, Chip, Empty } from '../../components/ui';
+import { Btn, Chip, Empty, Seg } from '../../components/ui';
 import { minPrice, providerSlots } from '../../db/core';
+import { AREAS } from '../../data/seed';
 import { useApp } from '../../store';
 import { C } from '../../theme';
 import { haversine, todayISO } from '../../utils';
@@ -20,10 +22,13 @@ export default function DiscoverScreen() {
   const params = useLocalSearchParams<{ q?: string; cat?: string }>();
   const [f, setF] = useState<F>({ ...DEF, q: params.q || '', cat: params.cat || '' });
   const [showFilters, setShowFilters] = useState(false);
-  const u = app.user!;
+  const [mode, setMode] = useState<'list' | 'map'>('list');
+  const [selPin, setSelPin] = useState<string | null>(null);
+  const u = app.user;
   const appVersion = app.version;
 
   const list = useMemo(() => {
+    if (!u) return [];
     const q = f.q.toLowerCase();
     let ps = app.db.profiles.filter((p) => p.verification !== 'suspended');
     if (q) {
@@ -65,6 +70,24 @@ export default function DiscoverScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [app.db, f, appVersion, u]);
 
+  if (!u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
+
+  const pins: MapPin[] = list.map((x) => ({
+    id: x.p.id,
+    lat: x.p.lat,
+    lng: x.p.lng,
+    title: x.p.displayName,
+    sub: x.p.categoryIds
+      .map((cid) => app.db.categories.find((c) => c.id === cid)?.name)
+      .filter(Boolean)
+      .join(' · '),
+    rating: x.p.reviewCount ? x.p.avg : undefined,
+    price: app.db.services.some((s) => s.providerId === x.p.id && s.active) ? minPrice(x.p.id) : undefined,
+    verified: x.p.verification === 'verified',
+    radiusKm: x.p.radiusKm,
+  }));
+  const selProfile = selPin ? list.find((x) => x.p.id === selPin)?.p : null;
+
   const set = (patch: Partial<F>) => setF((s) => ({ ...s, ...patch }));
   const activeChips: { k: keyof F; label: string }[] = [];
   if (f.cat) activeChips.push({ k: 'cat', label: app.db.categories.find((c) => c.id === f.cat)?.name || '' });
@@ -95,6 +118,41 @@ export default function DiscoverScreen() {
             <Ionicons name="funnel-outline" size={18} color={C.plum} />
           </Pressable>
         </View>
+
+        <Seg
+          options={[
+            { key: 'list', label: 'List' },
+            { key: 'map', label: 'Map' },
+          ]}
+          value={mode}
+          onChange={(k) => setMode(k as 'list' | 'map')}
+          style={{ marginTop: 10 }}
+        />
+
+        {mode === 'map' ? (
+          <View style={{ marginTop: 12 }}>
+            <MapCanvas
+              pins={pins}
+              user={{ lat: u.lat, lng: u.lng, label: u.area }}
+              areas={AREAS}
+              selectedId={selPin}
+              onSelect={(pin) => setSelPin(pin.id)}
+              height={320}
+            />
+            {selProfile ? (
+              <MapPinCard
+                pin={pins.find((x) => x.id === selProfile.id)!}
+                distanceKm={haversine(u.lat, u.lng, selProfile.lat, selProfile.lng)}
+                onView={() => router.push({ pathname: '/provider/[id]', params: { id: selProfile.id } })}
+                onBook={() => router.push({ pathname: '/book/[id]', params: { id: selProfile.id } })}
+              />
+            ) : (
+              <Text style={{ fontSize: 11.5, color: C.ink3, marginTop: 9, textAlign: 'center' }}>
+                Tap a marker to see the studio, its rating, distance and service radius.
+              </Text>
+            )}
+          </View>
+        ) : null}
 
         <View style={{ flexDirection: 'row', gap: 6, marginTop: 10, alignItems: 'center' }}>
           <Text style={{ color: C.ink3, fontSize: 12, fontWeight: '600' }}>Sort</Text>

@@ -23,7 +23,7 @@ export default function BookScreen() {
   const [loc, setLoc] = useState<'studio' | 'home'>('studio');
   const [locArea, setLocArea] = useState<string>(app.user?.area || AREAS[0].name);
   const [err, setErr] = useState<string | null>(null);
-  const u = app.user!;
+  const u = app.user;
 
   const svc = serviceOf(serviceId);
 
@@ -47,7 +47,7 @@ export default function BookScreen() {
     return list.length > 0;
   };
 
-  if (!p) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
+  if (!p || !u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
 
   const slots = date && svc ? providerSlots(p.id, svc.id, date) : [];
 

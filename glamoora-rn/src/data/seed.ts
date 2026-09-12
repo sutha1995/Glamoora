@@ -33,12 +33,12 @@ function nextWorkDayOffset(pid: string, from: number): number {
 
 export function seed(): DB {
   const db: DB = {
-    v: 3,
+    v: 4,
     session: null,
     categories: [
       { id: 'c1', name: 'Lash Extensions', desc: 'Classic, volume & hybrid lash sets', icon: 'eye', active: true },
       { id: 'c2', name: 'Brow Embroidery', desc: 'Powder, microblading & ombré brows', icon: 'brush', active: true },
-      { id: 'c3', name: 'Massage', desc: 'Relaxation, deep tissue & spa therapies', icon: 'spa', active: true },
+      { id: 'c3', name: 'Massage', desc: 'Relaxation, deep tissue & spa therapies', icon: 'hand-left', active: true },
       { id: 'c4', name: 'Nail Services', desc: 'Manicure, pedicure & hand-painted art', icon: 'color-palette', active: true },
       { id: 'c5', name: 'Saree Draping', desc: 'Traditional & contemporary styling', icon: 'ribbon', active: true },
       { id: 'c6', name: 'Waxing / Hair Removal', desc: 'Precision waxing & smooth skin care', icon: 'leaf', active: true },

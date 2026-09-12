@@ -10,8 +10,9 @@ import { C } from '../../theme';
 export default function SettingsScreen() {
   const app = useApp();
   const [confirmReset, setConfirmReset] = useState(false);
-  const u = app.user!;
-  const p = app.db.profiles.find((x) => x.userId === u.id);
+  const u = app.user;
+  const p = app.db.profiles.find((x) => x.userId === u?.id);
+  if (!u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <TopBar back title="Settings" sub={p?.displayName} />

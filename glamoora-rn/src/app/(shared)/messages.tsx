@@ -13,7 +13,8 @@ import { C } from '../../theme';
  */
 export default function MessagesScreen() {
   const app = useApp();
-  const u = app.user!;
+  const u = app.user;
+  if (!u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   const threads = repo.conversationsFor(u.id).length;
   const unread = repo.unreadMessages(u.id);
 

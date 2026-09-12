@@ -60,10 +60,11 @@ function lastMessage(messages: Message[]): Message | undefined {
 /* ============================== thread list ============================== */
 export function MessagesList({ onOpen }: { onOpen: (conversationId: string) => void }) {
   const app = useApp();
-  const u = app.user!;
+  const u = app.user;
   const v = app.version;
 
   const rows = useMemo(() => {
+    if (!u) return [];
     return repo.conversationsFor(u.id).map((conv) => {
       const msgs = repo.messagesOf(conv.id);
       const other = otherParty(conv);
@@ -72,7 +73,9 @@ export function MessagesList({ onOpen }: { onOpen: (conversationId: string) => v
       return { conv, msgs, other, unread, last: lastMessage(msgs), booking };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [u.id, app.db, v]);
+  }, [u?.id, app.db, v]);
+
+  if (!u) return null;
 
   if (!rows.length) {
     return (
@@ -133,7 +136,7 @@ const QUICK_PROVIDER = ['Yes, that slot is free!', 'Please arrive 5 minutes earl
 
 export function ChatThread({ conversationId, onBack }: { conversationId: string; onBack: () => void }) {
   const app = useApp();
-  const u = app.user!;
+  const u = app.user;
   const v = app.version;
   const [draft, setDraft] = useState('');
   const [err, setErr] = useState<string | null>(null);
@@ -143,9 +146,9 @@ export function ChatThread({ conversationId, onBack }: { conversationId: string;
   const messages = useMemo(() => (conv ? repo.messagesOf(conv.id) : []), [conv, v]);
 
   useEffect(() => {
-    if (conv) repo.markThreadRead(conv.id, u.id);
+    if (conv && u) repo.markThreadRead(conv.id, u.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conv?.id, messages.length]);
+  }, [conv?.id, messages.length, u]);
 
   useEffect(() => {
     if (messages.length) {
@@ -154,7 +157,7 @@ export function ChatThread({ conversationId, onBack }: { conversationId: string;
     }
   }, [messages.length]);
 
-  if (!conv) {
+  if (!conv || !u) {
     return (
       <View style={{ flex: 1, backgroundColor: C.bg, padding: 20 }}>
         <Btn label="Back" variant="o" size="sm" onPress={onBack} />

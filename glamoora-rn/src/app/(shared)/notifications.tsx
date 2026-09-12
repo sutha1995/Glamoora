@@ -25,7 +25,8 @@ const ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
 
 export default function NotifsScreen() {
   const app = useApp();
-  const u = app.user!;
+  const u = app.user;
+  if (!u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   const ns = app.db.notifs.filter((n) => n.userId === u.id).sort((a, b) => b.createdAt - a.createdAt);
   const unread = ns.filter((n) => !n.read).length;
   return (

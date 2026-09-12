@@ -14,12 +14,14 @@ import { haversine } from '../../utils';
 export default function HomeScreen() {
   const app = useApp();
   const [q, setQ] = useState('');
-  const u = app.user!;
+  const u = app.user;
   const appVersion = app.version;
 
   const visibleProfiles = useMemo(
     () =>
-      app.db.profiles
+      !u
+        ? []
+        : app.db.profiles
         .filter((p) => p.verification !== 'suspended')
         .map((p) => ({ p, dist: haversine(u.lat, u.lng, p.lat, p.lng) }))
         .sort((a, b) => score(b) - score(a))
@@ -42,6 +44,9 @@ export default function HomeScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [app.db, appVersion]
   );
+
+  // Logged out (or session still resolving): the root guard is redirecting.
+  if (!u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
@@ -142,7 +147,8 @@ function useAppName() {
 }
 function AreaSheet({ onClose }: { onClose: () => void }) {
   const app = useApp();
-  const u = app.user!;
+  const u = app.user;
+  if (!u) return null;
   return (
     <>
       <Pressable style={StyleSheet_overlay} onPress={onClose} />

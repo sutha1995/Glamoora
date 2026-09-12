@@ -16,7 +16,8 @@ export default function BookingsScreen() {
   const app = useApp();
   const [tab, setTab] = useState<Tab>('upcoming');
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
-  const u = app.user!;
+  const u = app.user;
+  if (!u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
 
   const list = app.db.bookings
     .filter((b) => b.customerId === u.id)

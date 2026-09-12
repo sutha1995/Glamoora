@@ -47,7 +47,7 @@ import type {
 } from './repository';
 
 /** Bump when the persisted shape changes so old caches reseed cleanly. */
-export const DB_VERSION = 3;
+export const DB_VERSION = 4;
 
 /* ================= state ================= */
 let db: DB = seed();

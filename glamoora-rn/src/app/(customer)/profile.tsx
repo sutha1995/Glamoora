@@ -8,7 +8,8 @@ import { C } from '../../theme';
 
 export default function ProfileScreen() {
   const app = useApp();
-  const u = app.user!;
+  const u = app.user;
+  if (!u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   const mine = app.db.bookings.filter((b) => b.customerId === u.id);
   const done = mine.filter((b) => b.status === 'completed').length;
   const favN = app.db.favourites.filter((f) => f.customerId === u.id).length;

@@ -38,8 +38,8 @@ export default function ProviderScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  if (!p || !data) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
-  const u = me()!;
+  const u = me();
+  if (!p || !data || !u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   const fav = u.role === 'customer' && isFav(u.id, p.id);
   const suspended = p.verification === 'suspended';
 

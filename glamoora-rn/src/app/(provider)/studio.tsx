@@ -22,8 +22,8 @@ export default function StudioScreen() {
   });
   const [portSvc, setPortSvc] = useState('');
   const [caption, setCaption] = useState('');
-  if (!p) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
-  const u = app.user!;
+  const u = app.user;
+  if (!p || !u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   const svcs = app.db.services.filter((s) => s.providerId === p.id && s.active);
   const port = app.db.portfolio.filter((x) => x.providerId === p.id);
 
