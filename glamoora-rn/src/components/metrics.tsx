@@ -5,7 +5,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { marketplaceMetrics, funnel, type FunnelStep } from '../domain/metrics';
+import { funnel, marketplaceMetrics, metricsInputFromDb, type FunnelStep } from '../domain/metrics';
 import { useApp } from '../store';
 import { C, SERIF } from '../theme';
 import { timeAgo } from '../utils';
@@ -43,25 +43,7 @@ export function MetricsPanel() {
   const [logFilter, setLogFilter] = useState<string>('');
   const v = app.version;
 
-  const m = useMemo(() => {
-    const rated = d.reviews.filter((r) => r.rating > 0);
-    const unread = d.messages.filter((msg) => msg.readBy.length < 2).length;
-    return marketplaceMetrics({
-      events: d.events,
-      bookings: d.bookings,
-      customers: d.users.filter((u) => u.role === 'customer').length,
-      providers: d.profiles.length,
-      verifiedProviders: d.profiles.filter((p) => p.verification === 'verified').length,
-      pendingVerification: d.profiles.filter((p) => p.verification === 'pending').length,
-      suspendedProviders: d.profiles.filter((p) => p.verification === 'suspended').length,
-      activeServices: d.services.filter((s) => s.active).length,
-      reviews: d.reviews.length,
-      avgRating: rated.length ? Math.round((rated.reduce((a, r) => a + r.rating, 0) / rated.length) * 10) / 10 : 0,
-      openReports: d.reports.filter((r) => r.status === 'open').length,
-      unreadMessages: unread,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [d, v]);
+  const m = useMemo(() => marketplaceMetrics(metricsInputFromDb(d)), [d, v]);
 
   const steps = useMemo(() => funnel(d.events), [d.events, v]);
   const log = useMemo(

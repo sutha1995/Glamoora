@@ -47,7 +47,7 @@ export default function HoursScreen() {
                     onPress={() => { setAvailability(p.id, i, !w); app.bump(); }}
                     style={{ width: 42, height: 25, borderRadius: 999, backgroundColor: w ? C.green : C.line2, justifyContent: 'center', paddingHorizontal: 3, marginRight: 10 }}
                   >
-                    <View style={{ width: 19, height: 19, borderRadius: 9.5, backgroundColor: C.white, transform: [{ translateX: w ? 17 : 0 }], shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 2, elevation: 1 }} />
+                    <View style={{ width: 19, height: 19, borderRadius: 9.5, backgroundColor: C.white, transform: [{ translateX: w ? 17 : 0 }], boxShadow: '0 1px 2px rgba(0,0,0,0.22)' }} />
                   </Pressable>
                   <Text style={{ color: C.plum, fontSize: 14, fontWeight: '700' }}>{nm}</Text>
                   {i === today ? (
@@ -138,7 +138,7 @@ function TimePick({ value, onChange }: { value: string; onChange: (v: string) =>
         <Ionicons name="chevron-down" size={14} color={C.ink3} />
       </Pressable>
       {open ? (
-        <View style={{ position: 'absolute', top: 44, left: 0, right: 0, backgroundColor: C.white, borderRadius: 12, borderWidth: 1, borderColor: C.line, zIndex: 40, maxHeight: 190, shadowColor: C.plum, shadowOpacity: 0.18, shadowRadius: 10, elevation: 10 }}>
+        <View style={{ position: 'absolute', top: 44, left: 0, right: 0, backgroundColor: C.white, borderRadius: 12, borderWidth: 1, borderColor: C.line, zIndex: 40, maxHeight: 190, boxShadow: '0 4px 10px rgba(74,50,56,0.18)' }}>
           <ScrollView>
             {TIMES.map((t) => (
               <Pressable key={t} onPress={() => { onChange(t); setOpen(false); }} style={{ paddingHorizontal: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: C.line }}>

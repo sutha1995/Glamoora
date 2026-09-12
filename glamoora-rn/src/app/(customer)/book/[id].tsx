@@ -223,7 +223,7 @@ function AreaPicker({ value, onChange }: { value: string; onChange: (v: string) 
         <Ionicons name="chevron-down" size={16} color={C.ink3} />
       </Pressable>
       {open ? (
-        <View style={{ position: 'absolute', top: 50, left: 0, right: 0, backgroundColor: C.white, borderRadius: 12, borderWidth: 1, borderColor: C.line, zIndex: 30, maxHeight: 220, shadowColor: C.plum, shadowOpacity: 0.15, shadowRadius: 10, elevation: 8 }}>
+        <View style={{ position: 'absolute', top: 50, left: 0, right: 0, backgroundColor: C.white, borderRadius: 12, borderWidth: 1, borderColor: C.line, zIndex: 30, maxHeight: 220, boxShadow: '0 4px 10px rgba(74,50,56,0.15)' }}>
           <ScrollView>
             {AREAS.map((a) => (
               <Pressable key={a.name} onPress={() => { onChange(a.name); setOpen(false); }} style={{ paddingHorizontal: 13, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: C.line }}>

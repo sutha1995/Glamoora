@@ -205,7 +205,7 @@ function StatusPicker({ b }: { b: { id: string; status: BookingStatus } }) {
         <Ionicons name="chevron-down" size={13} color={C.ink3} />
       </Pressable>
       {open ? (
-        <View style={{ position: 'absolute', top: 38, left: 0, width: 150, backgroundColor: C.white, borderRadius: 12, borderWidth: 1, borderColor: C.line, zIndex: 30, shadowColor: C.plum, shadowOpacity: 0.15, shadowRadius: 10, elevation: 8 }}>
+        <View style={{ position: 'absolute', top: 38, left: 0, width: 150, backgroundColor: C.white, borderRadius: 12, borderWidth: 1, borderColor: C.line, zIndex: 30, boxShadow: '0 4px 10px rgba(74,50,56,0.15)' }}>
           {opts.map((o) => (
             <Pressable
               key={o}

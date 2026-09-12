@@ -297,10 +297,10 @@ const styles = StyleSheet.create({
   btn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   flex1: { width: '100%' },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 11, paddingVertical: 5.5, borderRadius: R.pill, borderWidth: 1, alignSelf: 'flex-start' },
-  card: { backgroundColor: C.white, borderWidth: 1, borderColor: C.line, borderRadius: R.lg, padding: 14, shadowColor: C.plum, shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 2 },
+  card: { backgroundColor: C.white, borderWidth: 1, borderColor: C.line, borderRadius: R.lg, padding: 14, boxShadow: '0 6px 12px rgba(74,50,56,0.08)' },
   label: { fontSize: 11.5, fontWeight: '700', color: C.ink2, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 6 },
   inp: { borderWidth: 1.5, borderColor: C.line2, borderRadius: R.md, backgroundColor: C.white, padding: 11, paddingHorizontal: 13, fontSize: 14.5, color: C.ink },
   seg: { flexDirection: 'row', backgroundColor: C.brand100, borderRadius: R.md, padding: 3, gap: 3 },
   segBtn: { flex: 1, paddingVertical: 9, alignItems: 'center', borderRadius: 9 },
-  segBtnOn: { backgroundColor: C.white, shadowColor: C.plum, shadowOpacity: 0.12, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
+  segBtnOn: { backgroundColor: C.white, boxShadow: '0 1px 4px rgba(74,50,56,0.12)' },
 });

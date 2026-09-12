@@ -186,11 +186,7 @@ export function MapCanvas({ pins, user, areas = [], selectedId, onSelect, height
                 borderWidth: 1.5,
                 borderColor: isSel ? C.plum : C.brand,
                 alignItems: 'center',
-                shadowColor: C.plum,
-                shadowOpacity: 0.2,
-                shadowRadius: 6,
-                shadowOffset: { width: 0, height: 3 },
-                elevation: 3,
+                boxShadow: '0 3px 6px rgba(74,50,56,0.2)',
               }}
             >
               <Text style={{ fontSize: 10.5, fontWeight: '800', color: isSel ? C.white : C.brand700 }}>

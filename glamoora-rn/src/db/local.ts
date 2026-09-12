@@ -680,6 +680,8 @@ export const localRepository: Repository = {
     if (!text) return { err: 'Write a message first.' };
     if (text.length > 1000) return { err: 'Messages are limited to 1000 characters.' };
 
+    // Ownership guard (PRD §14): the signed-in account must be the sender.
+    if (db.session && db.session !== senderId) return { err: 'You are not part of this conversation.' };
     const provider = db.profiles.find((p) => p.id === c.providerId);
     const isProviderSender = !!provider && provider.userId === senderId;
     if (senderId !== c.customerId && !isProviderSender) return { err: 'You are not part of this conversation.' };

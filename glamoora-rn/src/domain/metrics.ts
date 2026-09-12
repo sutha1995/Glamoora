@@ -3,7 +3,7 @@
  * and bookings. No storage imports, so the same numbers can be computed on a
  * device or later inside Postgres.
  */
-import type { AnalyticsEvent, AnalyticsEventName, Booking } from '../types';
+import type { AnalyticsEvent, AnalyticsEventName, Booking, DB } from '../types';
 
 export interface FunnelStep {
   label: string;
@@ -182,4 +182,27 @@ export function providerEvents(events: AnalyticsEvent[], providerId: string): An
 export function providerReach(events: AnalyticsEvent[], providerId: string): { views: number; uniqueViewers: number } {
   const views = events.filter((e) => e.name === 'provider_view' && e.providerId === providerId);
   return { views: views.length, uniqueViewers: new Set(views.map((e) => e.actorId)).size };
+}
+
+/**
+ * Builds the metrics input straight from a DB snapshot so the admin panel and
+ * any future server-side report compute identical numbers.
+ */
+export function metricsInputFromDb(db: DB): MetricsInput {
+  const rated = db.reviews.filter((r) => r.rating > 0);
+  const unread = db.messages.filter((m) => m.readBy.length < 2).length;
+  return {
+    events: db.events,
+    bookings: db.bookings,
+    customers: db.users.filter((u) => u.role === 'customer').length,
+    providers: db.profiles.length,
+    verifiedProviders: db.profiles.filter((p) => p.verification === 'verified').length,
+    pendingVerification: db.profiles.filter((p) => p.verification === 'pending').length,
+    suspendedProviders: db.profiles.filter((p) => p.verification === 'suspended').length,
+    activeServices: db.services.filter((s) => s.active).length,
+    reviews: db.reviews.length,
+    avgRating: rated.length ? Math.round((rated.reduce((a, r) => a + r.rating, 0) / rated.length) * 10) / 10 : 0,
+    openReports: db.reports.filter((r) => r.status === 'open').length,
+    unreadMessages: unread,
+  };
 }

@@ -12,7 +12,7 @@ import { C } from '../theme';
  * `['admin']` is the console. Roles are enforced by top-level URL segment.
  */
 const PUBLIC_ROUTES = new Set(['', 'auth']);
-const SHARED_ROUTES = new Set(['notifications', 'messages', 'chat']);
+const SHARED_ROUTES = new Set(['notifications', 'messages', 'chat', 'assistant']);
 const CUSTOMER_ROUTES = new Set([
   'home', 'discover', 'bookings', 'favourites', 'profile',
   'provider', 'book', 'book-success', 'review',

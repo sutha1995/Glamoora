@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { LocBadge } from '../../components/cards';
@@ -51,6 +52,12 @@ export default function ServicesScreen() {
                     <SwitchRowInline on={s.active} onToggle={(v) => { setServiceActive(s.id, v); app.bump(); }} />
                     <View style={{ flexDirection: 'row', gap: 5 }}>
                       <Btn label="Edit" variant="o" size="xs" onPress={() => { setEditingId(s.id); setAdding(false); }} />
+                      <Btn
+                        label="✨"
+                        variant="o"
+                        size="xs"
+                        onPress={() => router.push({ pathname: '/assistant', params: { tool: 'describe', svc: s.id } })}
+                      />
                       {!s.active ? <Btn label="Delete" variant="d" size="xs" onPress={() => { deleteService(s.id); app.bump(); }} /> : null}
                     </View>
                   </View>
@@ -72,7 +79,7 @@ function SwitchRowInline({ on, onToggle }: { on: boolean; onToggle: (v: boolean)
       onPress={() => onToggle(!on)}
       style={{ width: 42, height: 25, borderRadius: 999, backgroundColor: on ? C.green : C.line2, justifyContent: 'center', paddingHorizontal: 3 }}
     >
-      <View style={{ width: 19, height: 19, borderRadius: 9.5, backgroundColor: C.white, transform: [{ translateX: on ? 17 : 0 }], shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 2, elevation: 1 }} />
+      <View style={{ width: 19, height: 19, borderRadius: 9.5, backgroundColor: C.white, transform: [{ translateX: on ? 17 : 0 }], boxShadow: '0 1px 2px rgba(0,0,0,0.22)' }} />
     </Pressable>
   );
 }
@@ -154,7 +161,7 @@ function PickRow({ value, options, onChange }: { value: string; options: { v: st
         <Ionicons name="chevron-down" size={15} color={C.ink3} />
       </Pressable>
       {open ? (
-        <View style={{ position: 'absolute', top: 46, left: 0, right: 0, backgroundColor: C.white, borderRadius: 12, borderWidth: 1, borderColor: C.line, zIndex: 30, maxHeight: 200, shadowColor: C.plum, shadowOpacity: 0.15, shadowRadius: 10, elevation: 8 }}>
+        <View style={{ position: 'absolute', top: 46, left: 0, right: 0, backgroundColor: C.white, borderRadius: 12, borderWidth: 1, borderColor: C.line, zIndex: 30, maxHeight: 200, boxShadow: '0 4px 10px rgba(74,50,56,0.15)' }}>
           <ScrollView>
             {options.map((o) => (
               <Pressable key={o.v} onPress={() => { onChange(o.v); setOpen(false); }} style={{ paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.line }}>
