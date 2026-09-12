@@ -269,9 +269,9 @@ export function SwitchRow({ title, sub, value, onValueChange, tint }: { title: s
     </View>
   );
 }
-export function Note({ children }: { children: React.ReactNode }) {
+export function Note({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   return (
-    <View style={{ backgroundColor: C.brand50, borderWidth: 1, borderColor: C.brand100, borderRadius: 10, padding: 10, marginTop: 10 }}>
+    <View style={[{ backgroundColor: C.brand50, borderWidth: 1, borderColor: C.brand100, borderRadius: 10, padding: 10, marginTop: 10 }, style]}>
       <Text style={{ fontSize: 11.5, color: C.ink3 }}>{children}</Text>
     </View>
   );

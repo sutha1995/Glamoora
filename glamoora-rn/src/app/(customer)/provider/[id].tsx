@@ -2,13 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { PGrid, ServiceRow, VerifiedTick } from '../../components/cards';
-import { TopBar } from '../../components/topbar';
-import { Avatar, Card, Chip, Empty, Pill, Row, Sp, Stars } from '../../components/ui';
-import { activeServicesOf, availMap, catOf, isFav, me, providerSlots, profileOf, reviewsOf, toggleFavourite, userById } from '../../db/core';
-import { useApp } from '../../store';
-import { C } from '../../theme';
-import { addDays, dISO, haversine, parseISO, timeAgo, todayISO } from '../../utils';
+import { PGrid, ServiceRow, VerifiedTick } from '../../../components/cards';
+import { TopBar } from '../../../components/topbar';
+import { Avatar, Card, Chip, Empty, Pill, Row, Sp, Stars } from '../../../components/ui';
+import { activeServicesOf, availMap, catOf, isFav, me, providerSlots, profileOf, reviewsOf, toggleFavourite, userById } from '../../../db/core';
+import { useApp } from '../../../store';
+import { C } from '../../../theme';
+import { addDays, dISO, haversine, parseISO, timeAgo, todayISO } from '../../../utils';
 
 export default function ProviderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -133,7 +133,7 @@ export default function ProviderScreen() {
             </View>
           ) : (
             <Card flush>
-              {Array.from({ length: 7 }, (_, i) => addDays(new Date(), i)).map((d) => {
+              {Array.from({ length: 7 }, (_, i) => addDays(new Date(), i)).map((d, i) => {
                 const iso = dISO(d);
                 const w = data.am[d.getDay()];
                 const name = i === 0 ? 'Today' : parseISO(iso).toLocaleDateString('en-MY', { weekday: 'long' });

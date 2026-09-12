@@ -1,15 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { LocBadge } from '../../components/cards';
-import { TopBar } from '../../components/topbar';
-import { Btn, Card, Chip, Note, Row } from '../../components/ui';
-import { activeServicesOf, createBooking, providerSlots, profileOf, serviceOf } from '../../db/core';
-import { AREAS } from '../../data/seed';
-import { useApp } from '../../store';
-import { C } from '../../theme';
-import { addDays, addMin, dISO, fmtDate, fmtDateLong, fmtRM, parseISO } from '../../utils';
+import { Pressable, ScrollView, Text, TextInput, View, type TextStyle } from 'react-native';
+import { LocBadge } from '../../../components/cards';
+import { TopBar } from '../../../components/topbar';
+import { Btn, Card, Chip, Note, Row } from '../../../components/ui';
+import { activeServicesOf, createBooking, providerSlots, profileOf, serviceOf } from '../../../db/core';
+import { AREAS } from '../../../data/seed';
+import { useApp } from '../../../store';
+import { C } from '../../../theme';
+import { addDays, addMin, dISO, fmtDate, fmtDateLong, fmtRM, parseISO } from '../../../utils';
 
 export default function BookScreen() {
   const { id, svc: svcParam } = useLocalSearchParams<{ id: string; svc?: string }>();
@@ -169,7 +169,7 @@ export default function BookScreen() {
                 onChangeText={setNotes}
               />
             </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1.5, borderTopStyle: 'dashed', borderTopColor: C.line2, marginTop: 12, paddingTop: 12 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1.5, borderStyle: 'dashed', borderTopColor: C.line2, marginTop: 12, paddingTop: 12 }}>
               <Row style={{ gap: 6 }}>
                 <Ionicons name="wallet-outline" size={15} color={C.ink3} />
                 <Text style={{ color: C.ink3, fontSize: 12 }}>Payment</Text>
@@ -222,4 +222,4 @@ function AreaPicker({ value, onChange }: { value: string; onChange: (v: string) 
     </View>
   );
 }
-const flbl = { fontSize: 11.5, fontWeight: '700', color: C.ink2, textTransform: 'uppercase' as const, letterSpacing: 0.6, marginBottom: 8 };
+const flbl: TextStyle = { fontSize: 11.5, fontWeight: '700', color: C.ink2, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 };

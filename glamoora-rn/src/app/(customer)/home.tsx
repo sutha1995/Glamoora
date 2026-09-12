@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View, type ViewStyle } from 'react-native';
 import { PortfolioTile, ProviderCard } from '../../components/cards';
 import { TopBar } from '../../components/topbar';
 import { HScroll, SectionTitle } from '../../components/ui';
@@ -171,4 +171,4 @@ function AreaSheet({ onClose }: { onClose: () => void }) {
     </>
   );
 }
-const StyleSheet_overlay = { ...{ position: 'absolute', top: 40, left: 0, right: 0, bottom: 0, zIndex: 40 } } as const;
+const StyleSheet_overlay: ViewStyle = { position: 'absolute', top: 40, left: 0, right: 0, bottom: 0, zIndex: 40 };

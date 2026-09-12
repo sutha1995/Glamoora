@@ -222,7 +222,7 @@ function TimeSheet({ title, a, b, onConfirm, onClose }: { title: string; a: stri
   const [e, setE] = useState(b);
   return (
     <View style={{ ...StyleSheet_overlay }}>
-      <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+      <Pressable style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} onPress={onClose} />
       <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: C.bg, borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 18, paddingBottom: 30 }}>
         <Text style={{ fontFamily: 'serif', fontSize: 17, color: C.plum, marginBottom: 14 }}>{title}</Text>
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
@@ -235,4 +235,4 @@ function TimeSheet({ title, a, b, onConfirm, onClose }: { title: string; a: stri
     </View>
   );
 }
-const StyleSheet_overlay = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, backgroundColor: 'rgba(40,22,27,0.5)' } as const;
+const StyleSheet_overlay: import('react-native').ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, backgroundColor: 'rgba(40,22,27,0.5)' };

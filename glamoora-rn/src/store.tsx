@@ -1,8 +1,9 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
-import { C } from '../theme';
-import { getDB, initDB, me, setSession, DB } from '../db/core';
+import { C } from './theme';
+import { getDB, initDB, me, setSession } from './db/core';
+import type { DB } from './types';
 
 interface AppCtx {
   ready: boolean;
@@ -157,7 +158,11 @@ export function useApp() {
 
 const styles = StyleSheet.create({
   splashLoader: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: C.brand,
     justifyContent: 'center',
     alignItems: 'center',

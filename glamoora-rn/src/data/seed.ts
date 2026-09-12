@@ -1,4 +1,4 @@
-import { Area, DB } from '../types';
+import { Area, BookingStatus, DB } from '../types';
 import { addDays, dISO, uid } from '../utils';
 
 export const AREAS: Area[] = [
@@ -215,7 +215,7 @@ export function seed(): DB {
   PF('p8', 'Classic Lash Set', 'lash', 2, 'Complete look — brows + lashes');
   PF('p8', 'Microblading', 'brow', 3, 'Symmetry mapping session');
 
-  const bk = (customerId: string, providerId: string, serviceId: string, off: number, start: string, status: string, notes: string) => {
+  const bk = (customerId: string, providerId: string, serviceId: string, off: number, start: string, status: BookingStatus, notes: string) => {
     const s = db.services.find((x) => x.id === serviceId)!;
     const off2 = nextWorkDayOffset(providerId, off);
     const date = dISO(addDays(new Date(), off2));

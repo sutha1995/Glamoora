@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View, type TextStyle, type ViewStyle } from 'react-native';
 import { ProviderCard } from '../../components/cards';
 import { TopBar } from '../../components/topbar';
 import { Btn, Chip, Empty } from '../../components/ui';
@@ -123,7 +123,7 @@ export default function DiscoverScreen() {
 
       {showFilters ? (
         <View style={overlayStyle}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => setShowFilters(false)} />
+          <Pressable style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} onPress={() => setShowFilters(false)} />
           <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: C.bg, borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 18, paddingBottom: 30, maxHeight: '82%', }}>
             <ScrollView>
               <Text style={{ fontFamily: 'serif', fontSize: 17, color: C.plum, marginBottom: 14 }}>Filters</Text>
@@ -169,5 +169,5 @@ export default function DiscoverScreen() {
     </View>
   );
 }
-const flbl = { fontSize: 11.5, fontWeight: '700', color: C.ink2, textTransform: 'uppercase' as const, letterSpacing: 0.6, marginBottom: 6 };
-const overlayStyle = { ...{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, backgroundColor: 'rgba(40,22,27,0.5)' } } as const;
+const flbl: TextStyle = { fontSize: 11.5, fontWeight: '700', color: C.ink2, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 6 };
+const overlayStyle: ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, backgroundColor: 'rgba(40,22,27,0.5)' };

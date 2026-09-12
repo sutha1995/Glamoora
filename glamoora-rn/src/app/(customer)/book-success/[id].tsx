@@ -2,12 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
-import { TopBar } from '../../components/topbar';
-import { Btn, Card, Note, Pill } from '../../components/ui';
-import { profileOf, serviceOf, userById } from '../../db/core';
-import { useApp } from '../../store';
-import { C } from '../../theme';
-import { fmtDateLong, fmtRM } from '../../utils';
+import { TopBar } from '../../../components/topbar';
+import { Btn, Card, Note, Pill } from '../../../components/ui';
+import { profileOf, serviceOf, userById } from '../../../db/core';
+import { useApp } from '../../../store';
+import { C } from '../../../theme';
+import { fmtDateLong, fmtRM } from '../../../utils';
 
 export default function BookSuccessScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

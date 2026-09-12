@@ -100,7 +100,7 @@ export default function BookingsScreen() {
 
       {confirmCancel ? (
         <View style={{ ...StyleSheet_overlay }}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => setConfirmCancel(null)} />
+          <Pressable style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} onPress={() => setConfirmCancel(null)} />
           <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: C.bg, borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 18, paddingBottom: 30 }}>
             <Text style={{ fontFamily: 'serif', fontSize: 17, color: C.plum, marginBottom: 10 }}>Cancel booking?</Text>
             <Text style={{ color: C.ink2, fontSize: 13.5, marginBottom: 14 }}>The provider will be notified and the time slot released. This cannot be undone.</Text>
@@ -132,4 +132,4 @@ function Meta({ icon, text }: { icon: keyof typeof Ionicons.glyphMap; text: stri
     </View>
   );
 }
-const StyleSheet_overlay = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, backgroundColor: 'rgba(40,22,27,0.5)' } as const;
+const StyleSheet_overlay: import('react-native').ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, backgroundColor: 'rgba(40,22,27,0.5)' };

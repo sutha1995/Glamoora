@@ -58,7 +58,7 @@ export function TopBar({
         {title ? (
           <View style={{ flex: 1 }}>
             <Text style={{ fontFamily: 'serif', fontSize: 16, color: C.plum, flexShrink: 1 }} numberOfLines={1}>{title}</Text>
-            {sub ? <Text style={{ fontSize: 11, color: C.ink3, numberOfLines: 1 }}>{sub}</Text> : null}
+            {sub ? <Text style={{ fontSize: 11, color: C.ink3 }} numberOfLines={1}>{sub}</Text> : null}
           </View>
         ) : (
           <View style={{ flex: 1 }} />

@@ -6,7 +6,7 @@ import { C } from '../theme';
 
 function RootNavigator() {
   const { ready, user } = useApp();
-  const segments = useSegments();
+  const segments = useSegments() as unknown as string[];
   const router = useRouter();
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View, type TextStyle, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useApp } from '../store';
 import { C } from '../theme';
@@ -152,5 +152,5 @@ function DemoBtn({ icon, label, sub, onPress }: { icon: keyof typeof Ionicons.gl
     </Pressable>
   );
 }
-const lbl = { fontSize: 11.5, fontWeight: '700', color: C.ink2, textTransform: 'uppercase' as const, letterSpacing: 0.6, marginBottom: 6, marginTop: 12 };
-const primaryBtn = { backgroundColor: C.plum, borderRadius: 13, paddingVertical: 13, alignItems: 'center' as const, marginTop: 16 };
+const lbl: TextStyle = { fontSize: 11.5, fontWeight: '700', color: C.ink2, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 6, marginTop: 12 };
+const primaryBtn: ViewStyle = { backgroundColor: C.plum, borderRadius: 13, paddingVertical: 13, alignItems: 'center', marginTop: 16 };
