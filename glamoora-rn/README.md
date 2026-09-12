@@ -1,56 +1,53 @@
-# Welcome to your Expo app 👋
+# Glamoora — the app
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Expo (SDK 57) · React Native 0.86 · expo-router · TypeScript strict.
+Runs offline on a seeded local store: no backend, no API keys, no network needed to demo.
 
-## Get started
+**Full documentation lives in [`../README.md`](../README.md)** — PRD coverage, architecture,
+the AI layer, marketplace rules, demo script and demo logins. Conventions for working in
+this codebase are in [`AGENTS.md`](AGENTS.md).
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Run it
 
 ```bash
-npm run reset-project
+npm install
+npm run web          # http://localhost:8081
+npm start            # then press w / a / i for web, Android, iOS
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Sign in with any demo account, password `demo123`:
+`maya@glamoora.my` (customer) · `aina@glamoora.my` (studio) · `admin@glamoora.my` (admin).
 
-### Other setup steps
+## Check it
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+npm run verify       # 122 assertions: slot engine, bookings, reviews, payments,
+                     # messaging, moderation, analytics, search, AI parser, assistant
+npx tsc --noEmit     # strict typecheck, 0 errors
+npx expo export --platform web --output-dir /tmp/out   # prints the whole route tree
+```
 
-## Learn more
+`npm run verify` needs no test framework. `scripts/verify.mjs` compiles the
+storage-agnostic modules with the project's own `tsc`, writes minimal shims for the two
+React Native modules the data layer touches, then runs `src/__tests__` on plain Node.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Layout
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```
+src/app/          routes: (customer) (provider) (admin) (shared) + auth, index, _layout
+src/components/   cards · chat · mapview · metrics · report(s) · topbar · ui
+src/ai/           nlsearch (words → filters) · assistant (Q&A + provider writing tools)
+                  · recommend (explainable suggestions) — all offline and deterministic
+src/domain/       pure rules: slots · search · metrics
+src/db/           repository (contract) · local (seeded impl) · index (backend selection)
+                  · core (facade screens import) · storage (KV)
+src/data/seed.ts  the demo dataset
+src/__tests__/    the verification suites (run with npm run verify)
+```
 
-## Join the community
+## Swapping in a real backend
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+`src/db/repository.ts` is the seam. Implement `supabaseRepository: Repository` in
+`src/db/supabase.ts`, set `EXPO_PUBLIC_BACKEND=supabase`, and return it from `select()` in
+`src/db/index.ts`. No screen, component or domain rule changes — until then, that env var
+logs a visible warning and falls back to the local store rather than showing a blank app.
