@@ -61,11 +61,12 @@ export default function HomeScreen() {
               placeholderTextColor={C.ink3}
               value={q}
               onChangeText={setQ}
-              onSubmitEditing={() => router.push({ pathname: '/discover', params: { q } })}
+              returnKeyType="search"
+              onSubmitEditing={() => { if (q.trim()) app.track('search', { q: q.trim(), from: 'home' }); router.push({ pathname: '/discover', params: { q } }); }}
             />
           </View>
           <Pressable
-            onPress={() => router.push({ pathname: '/discover', params: { q } })}
+            onPress={() => { if (q.trim()) app.track('search', { q: q.trim(), from: 'home' }); router.push({ pathname: '/discover', params: { q } }); }}
             style={{ backgroundColor: C.plum, borderRadius: 13, width: 46, alignItems: 'center', justifyContent: 'center' }}
           >
             <Ionicons name="search" size={18} color={C.white} />
@@ -82,7 +83,7 @@ export default function HomeScreen() {
                 return (
                   <Pressable
                     key={c.id}
-                    onPress={() => router.push({ pathname: '/discover', params: { cat: c.id } })}
+                    onPress={() => { app.track('category_view', { cat: c.id, name: c.name }); router.push({ pathname: '/discover', params: { cat: c.id } }); }}
                     style={{ width: '48.5%', marginBottom: 10, backgroundColor: C.white, borderWidth: 1, borderColor: C.line, borderRadius: 14, alignItems: 'center', paddingVertical: 12 }}
                   >
                     <View style={{ width: 44, height: 44, borderRadius: 13, backgroundColor: C.brand100, alignItems: 'center', justifyContent: 'center', marginBottom: 7 }}>

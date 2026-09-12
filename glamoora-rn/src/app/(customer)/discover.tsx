@@ -81,7 +81,15 @@ export default function DiscoverScreen() {
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: C.white, borderWidth: 1.5, borderColor: C.line2, borderRadius: 13, paddingLeft: 12 }}>
             <Ionicons name="search" size={17} color={C.ink3} />
-            <TextInput style={{ flex: 1, padding: 12, paddingHorizontal: 10, fontSize: 14.5, color: C.ink }} placeholder="Search name, service, category…" placeholderTextColor={C.ink3} value={f.q} onChangeText={(v) => set({ q: v })} />
+            <TextInput
+              style={{ flex: 1, padding: 12, paddingHorizontal: 10, fontSize: 14.5, color: C.ink }}
+              placeholder="Search name, service, category…"
+              placeholderTextColor={C.ink3}
+              value={f.q}
+              onChangeText={(v) => set({ q: v })}
+              returnKeyType="search"
+              onSubmitEditing={() => { if (f.q.trim()) app.track('search', { q: f.q.trim(), from: 'discover' }); }}
+            />
           </View>
           <Pressable onPress={() => setShowFilters(true)} style={{ backgroundColor: C.white, borderWidth: 1.5, borderColor: C.line2, borderRadius: 13, width: 46, alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="funnel-outline" size={18} color={C.plum} />

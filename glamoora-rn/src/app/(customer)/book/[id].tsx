@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View, type TextStyle } from 'react-native';
 import { LocBadge } from '../../../components/cards';
 import { TopBar } from '../../../components/topbar';
@@ -26,6 +26,20 @@ export default function BookScreen() {
   const u = app.user!;
 
   const svc = serviceOf(serviceId);
+
+  useEffect(() => {
+    if (!id) return;
+    app.track('booking_started', { studio: p?.displayName || '' }, { providerId: id });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  useEffect(() => {
+    if (!serviceId) return;
+    const s = serviceOf(serviceId);
+    app.track('service_view', { name: s?.name || '', price: s?.price || 0 }, { providerId: id });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serviceId]);
+
   const days = useMemo(() => Array.from({ length: 14 }, (_, i) => addDays(new Date(), i)), []);
   const openOn = (dow: number) => {
     if (!p) return false;
