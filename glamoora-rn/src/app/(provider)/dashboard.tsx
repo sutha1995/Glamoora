@@ -5,6 +5,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { TopBar } from '../../components/topbar';
 import { Btn, Card, Pill, Row, SectionTitle, Sp, StatBox } from '../../components/ui';
 import { activeServicesOf, profileOf, serviceOf, setBookingStatus, userById } from '../../db/core';
+import { openThreadForBooking } from '../../components/chat';
 import { useApp } from '../../store';
 import { C } from '../../theme';
 import { fmtDate, fmtRM, todayISO } from '../../utils';
@@ -74,6 +75,9 @@ export default function DashboardScreen() {
                 <Btn label="No-show" variant="o" size="xs" block onPress={() => act(b.id, 'noshow')} />
                 <Btn label="Cancel" variant="d" size="xs" block onPress={() => act(b.id, 'cancel')} />
               </>
+            )}
+            {!['cancelled', 'rejected'].includes(b.status) && (
+              <Btn label="Message" variant="o" size="xs" block icon="chatbubble-ellipses-outline" onPress={() => openThreadForBooking(b)} />
             )}
           </View>
         ) : null}

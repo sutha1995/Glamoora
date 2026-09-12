@@ -5,6 +5,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { TopBar } from '../../components/topbar';
 import { Avatar, Btn, Card, Empty, Pill, Row, Seg } from '../../components/ui';
 import { profileOf, serviceOf, setBookingStatus } from '../../db/core';
+import { openThreadForBooking } from '../../components/chat';
 import { useApp } from '../../store';
 import { C } from '../../theme';
 import { fmtDate, fmtRM, todayISO } from '../../utils';
@@ -62,6 +63,11 @@ export default function BookingsScreen() {
                   <Meta icon="location-outline" text={(b.location || '').split(',')[0]} />
                 </View>
                 <Text style={{ fontSize: 11, color: C.ink3, marginTop: 7 }}>Ref {b.ref} · {b.payment}</Text>
+                {['pending', 'confirmed'].includes(b.status) ? (
+                  <Text style={{ fontSize: 11, color: C.ink3, marginTop: 3 }}>
+                    Free cancellation any time before your appointment — the slot is released instantly.
+                  </Text>
+                ) : null}
                 <View style={{ flexDirection: 'row', gap: 7, marginTop: 8 }}>
                   {['pending', 'confirmed'].includes(b.status) && (
                     <Btn label="Cancel" variant="d" size="sm" block onPress={() => setConfirmCancel(b.id)} />
@@ -73,6 +79,9 @@ export default function BookingsScreen() {
                     <View style={{ flex: 1, alignItems: 'center', backgroundColor: C.plum, borderRadius: 10, paddingVertical: 8 }}>
                       <Text style={{ color: C.white, fontSize: 12, fontWeight: '700' }}>Reviewed ★ {reviewed.rating}</Text>
                     </View>
+                  )}
+                  {p && !['cancelled', 'rejected'].includes(b.status) && (
+                    <Btn label="Message" variant="o" size="sm" block icon="chatbubble-ellipses-outline" onPress={() => openThreadForBooking(b)} />
                   )}
                   {p && (
                     <Btn label="View" variant="o" size="sm" block onPress={() => router.push({ pathname: '/provider/[id]', params: { id: p.id } })} />

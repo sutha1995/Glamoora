@@ -17,6 +17,10 @@ const ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
   booking_completed: 'checkmark-done',
   review: 'star',
   review_reminder: 'create',
+  message: 'chatbubble-ellipses',
+  verification: 'shield-checkmark',
+  verification_request: 'shield-outline',
+  report: 'flag',
 };
 
 export default function NotifsScreen() {

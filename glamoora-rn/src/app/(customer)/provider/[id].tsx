@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { PGrid, PortfolioTile, ServiceRow, VerifiedTick } from '../../../components/cards';
 import { ReportLink, ReportSheet, type ReportRequest } from '../../../components/report';
+import { openThread } from '../../../components/chat';
 import { TopBar } from '../../../components/topbar';
 import { Avatar, Card, Chip, Empty, Pill, Row, Sp, Stars } from '../../../components/ui';
 import { activeServicesOf, availMap, catOf, isFav, me, providerSlots, profileOf, reviewsOf, serviceOf, toggleFavourite, userById } from '../../../db/core';
@@ -76,6 +77,14 @@ export default function ProviderScreen() {
                 <Ionicons name={fav ? 'heart' : 'heart-outline'} size={18} color={fav ? C.brand : C.brand700} />
               </Pressable>
             )}
+            {u.role === 'customer' && !suspended ? (
+              <Pressable
+                onPress={() => openThread(u.id, p.id)}
+                style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: C.plum, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Ionicons name="chatbubble-ellipses-outline" size={17} color={C.white} />
+              </Pressable>
+            ) : null}
             {u.role === 'customer' && !suspended ? (
               <Pressable
                 onPress={() => setReport({ targetType: 'provider', targetId: p.id, label: p.displayName })}
