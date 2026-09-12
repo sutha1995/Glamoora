@@ -9,7 +9,8 @@ import { C } from '../../theme';
 
 export default function FavouritesScreen() {
   const app = useApp();
-  const u = app.user!;
+  const u = app.user;
+  if (!u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   const favs = app.db.favourites
     .filter((f) => f.customerId === u.id)
     .map((f) => f.providerId)

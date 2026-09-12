@@ -2,12 +2,12 @@ import { router } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { ScrollView, Text, TextInput, View } from 'react-native';
-import { TopBar } from '../../components/topbar';
-import { Avatar, Btn, Card, StarPicker } from '../../components/ui';
-import { addReview, profileOf, serviceOf } from '../../db/core';
-import { useApp } from '../../store';
-import { C } from '../../theme';
-import { fmtDate } from '../../utils';
+import { TopBar } from '../../../components/topbar';
+import { Avatar, Btn, Card, StarPicker } from '../../../components/ui';
+import { addReview, profileOf, serviceOf } from '../../../db/core';
+import { useApp } from '../../../store';
+import { C } from '../../../theme';
+import { fmtDate } from '../../../utils';
 
 export default function ReviewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

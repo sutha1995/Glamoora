@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View, type ViewStyle } from 'react-native';
 import { TopBar } from '../../components/topbar';
 import { Btn, Card, LRow, Note, Pill } from '../../components/ui';
 import { resetDB } from '../../db/core';
@@ -10,8 +10,9 @@ import { C } from '../../theme';
 export default function SettingsScreen() {
   const app = useApp();
   const [confirmReset, setConfirmReset] = useState(false);
-  const u = app.user!;
-  const p = app.db.profiles.find((x) => x.userId === u.id);
+  const u = app.user;
+  const p = app.db.profiles.find((x) => x.userId === u?.id);
+  if (!u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   return (
     <View style={{ flex: 1, backgroundColor: C.bg }}>
       <TopBar back title="Settings" sub={p?.displayName} />
@@ -64,6 +65,5 @@ export default function SettingsScreen() {
     </View>
   );
 }
-const overlay = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, backgroundColor: 'rgba(40,22,27,0.5)' } as const;
-const StyleSheet_abs = { ...StyleSheet_absHelper } as const;
-const StyleSheet_absHelper = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 } as const;
+const overlay: ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, backgroundColor: 'rgba(40,22,27,0.5)' };
+const StyleSheet_abs: ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 };

@@ -8,9 +8,11 @@ import { profileOf, setBookingStatusAdmin, setCategoryActive, setVerification, s
 import { useApp } from '../../store';
 import { C } from '../../theme';
 import { fmtDate, fmtRM } from '../../utils';
+import { MetricsPanel } from '../../components/metrics';
+import { ReportsPanel, VerificationQueue } from '../../components/reports';
 import type { BookingStatus } from '../../types';
 
-type Tab = 'overview' | 'providers' | 'categories' | 'bookings' | 'users';
+type Tab = 'overview' | 'providers' | 'reports' | 'categories' | 'bookings' | 'users' | 'metrics';
 
 export default function AdminScreen() {
   const app = useApp();
@@ -25,12 +27,16 @@ export default function AdminScreen() {
   const revN = d.bookings.filter((b) => b.status === 'completed').reduce((a, b) => a + b.price, 0);
   const top = [...d.profiles].sort((a, b) => b.avg - a.avg).slice(0, 5);
 
-  const TABS: { k: Tab; label: string }[] = [
+  const openReports = d.reports.filter((r) => r.status === 'open').length;
+  const pendingVerif = d.profiles.filter((p) => p.verification === 'pending').length;
+  const TABS: { k: Tab; label: string; badge?: number }[] = [
     { k: 'overview', label: 'Overview' },
-    { k: 'providers', label: 'Providers' },
+    { k: 'providers', label: 'Providers', badge: pendingVerif },
+    { k: 'reports', label: 'Reports', badge: openReports },
     { k: 'categories', label: 'Categories' },
     { k: 'bookings', label: 'Bookings' },
     { k: 'users', label: 'Users' },
+    { k: 'metrics', label: 'Metrics' },
   ];
 
   return (
@@ -43,8 +49,13 @@ export default function AdminScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 90 }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, marginBottom: 14 }}>
           {TABS.map((t) => (
-            <Pressable key={t.k} onPress={() => setTab(t.k)} style={{ paddingHorizontal: 13, paddingVertical: 8, borderRadius: 999, borderWidth: 1.5, backgroundColor: tab === t.k ? C.plum : C.white, borderColor: tab === t.k ? C.plum : C.line2 }}>
+            <Pressable key={t.k} onPress={() => setTab(t.k)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 13, paddingVertical: 8, borderRadius: 999, borderWidth: 1.5, backgroundColor: tab === t.k ? C.plum : C.white, borderColor: tab === t.k ? C.plum : C.line2 }}>
               <Text style={{ color: tab === t.k ? C.white : C.ink2, fontWeight: '700', fontSize: 12.5 }}>{t.label}</Text>
+              {!!t.badge && (
+                <View style={{ minWidth: 17, height: 17, paddingHorizontal: 4, borderRadius: 9, backgroundColor: tab === t.k ? C.white : C.brand, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ fontSize: 10, fontWeight: '800', color: tab === t.k ? C.plum : C.white }}>{t.badge}</Text>
+                </View>
+              )}
             </Pressable>
           ))}
         </ScrollView>
@@ -93,6 +104,7 @@ export default function AdminScreen() {
 
         {tab === 'providers' ? (
           <View>
+            <VerificationQueue />
             <Card flush>
               {d.profiles.map((p) => (
                 <View key={p.id} style={{ padding: 12, borderBottomWidth: 1, borderBottomColor: C.line, flexDirection: 'row', gap: 10, alignItems: 'center' }}>
@@ -121,6 +133,10 @@ export default function AdminScreen() {
             </Card>
           </View>
         ) : null}
+
+        {tab === 'reports' ? <ReportsPanel /> : null}
+
+        {tab === 'metrics' ? <MetricsPanel /> : null}
 
         {tab === 'categories' ? (
           <Card flush>
@@ -189,7 +205,7 @@ function StatusPicker({ b }: { b: { id: string; status: BookingStatus } }) {
         <Ionicons name="chevron-down" size={13} color={C.ink3} />
       </Pressable>
       {open ? (
-        <View style={{ position: 'absolute', top: 38, left: 0, width: 150, backgroundColor: C.white, borderRadius: 12, borderWidth: 1, borderColor: C.line, zIndex: 30, shadowColor: C.plum, shadowOpacity: 0.15, shadowRadius: 10, elevation: 8 }}>
+        <View style={{ position: 'absolute', top: 38, left: 0, width: 150, backgroundColor: C.white, borderRadius: 12, borderWidth: 1, borderColor: C.line, zIndex: 30, boxShadow: '0 4px 10px rgba(74,50,56,0.15)' }}>
           {opts.map((o) => (
             <Pressable
               key={o}

@@ -5,7 +5,8 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput,
 import { PGrid } from '../../components/cards';
 import { TopBar } from '../../components/topbar';
 import { Avatar, Btn, Card, LRow, Pill } from '../../components/ui';
-import { addPortfolioItem, removePortfolioItem, serviceOf, saveDB } from '../../db/core';
+import { addPortfolioItem, catOf, removePortfolioItem, serviceOf, saveDB } from '../../db/core';
+import { draftCaption } from '../../ai/assistant';
 import { useApp } from '../../store';
 import { C } from '../../theme';
 
@@ -22,8 +23,8 @@ export default function StudioScreen() {
   });
   const [portSvc, setPortSvc] = useState('');
   const [caption, setCaption] = useState('');
-  if (!p) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
-  const u = app.user!;
+  const u = app.user;
+  if (!p || !u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   const svcs = app.db.services.filter((s) => s.providerId === p.id && s.active);
   const port = app.db.portfolio.filter((x) => x.providerId === p.id);
 
@@ -77,6 +78,14 @@ export default function StudioScreen() {
               <Pill status={p.verification} />
             </View>
             <Btn label="Save profile" variant="p" block style={{ marginTop: 12 }} onPress={saveProfile} />
+            <Btn
+              label="✨ Check profile strength"
+              variant="o"
+              block
+              size="sm"
+              style={{ marginTop: 8 }}
+              onPress={() => router.push({ pathname: '/assistant', params: { tool: 'score' } })}
+            />
           </Card>
 
           <Text style={{ fontFamily: 'serif', fontSize: 16.5, color: C.plum, fontWeight: '600', marginBottom: 10 }}>
@@ -92,7 +101,30 @@ export default function StudioScreen() {
               ))}
               {!svcs.length ? <Text style={{ color: C.ink3, fontSize: 12 }}>Add a service first</Text> : null}
             </View>
-            <FieldL>Caption</FieldL>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <FieldL>Caption</FieldL>
+              <View style={{ flex: 1 }} />
+              <Pressable
+                disabled={!portSvc}
+                onPress={() => {
+                  const s = serviceOf(portSvc);
+                  if (!s) return;
+                  const done = port.filter((x) => x.serviceId === portSvc).length;
+                  const { caption: text } = draftCaption({
+                    serviceName: s.name,
+                    categoryName: catOf(s.categoryId)?.name || 'beauty',
+                    index: done,
+                    studioName: p.displayName,
+                  });
+                  setCaption(text.slice(0, 60));
+                  app.track('ai_assistant', { intent: 'draft_caption_inline' }, { providerId: p.id });
+                }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, paddingVertical: 5, borderRadius: 999, borderWidth: 1, borderColor: portSvc ? C.brand : C.line2, backgroundColor: C.white, opacity: portSvc ? 1 : 0.5 }}
+              >
+                <Ionicons name="sparkles" size={11} color={C.brand700} />
+                <Text style={{ fontSize: 10.5, fontWeight: '700', color: C.brand700 }}>✨ Suggest</Text>
+              </Pressable>
+            </View>
             <TextInput style={inp} value={caption} onChangeText={setCaption} maxLength={60} placeholder="e.g. Volume set — soft wing" placeholderTextColor={C.ink3} />
             <Btn
               label="Add portfolio item"

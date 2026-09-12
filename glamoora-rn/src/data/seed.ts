@@ -1,4 +1,4 @@
-import { Area, DB } from '../types';
+import { AnalyticsEventName, Area, BookingStatus, DB } from '../types';
 import { addDays, dISO, uid } from '../utils';
 
 export const AREAS: Area[] = [
@@ -33,12 +33,12 @@ function nextWorkDayOffset(pid: string, from: number): number {
 
 export function seed(): DB {
   const db: DB = {
-    v: 2,
+    v: 4,
     session: null,
     categories: [
       { id: 'c1', name: 'Lash Extensions', desc: 'Classic, volume & hybrid lash sets', icon: 'eye', active: true },
       { id: 'c2', name: 'Brow Embroidery', desc: 'Powder, microblading & ombré brows', icon: 'brush', active: true },
-      { id: 'c3', name: 'Massage', desc: 'Relaxation, deep tissue & spa therapies', icon: 'spa', active: true },
+      { id: 'c3', name: 'Massage', desc: 'Relaxation, deep tissue & spa therapies', icon: 'hand-left', active: true },
       { id: 'c4', name: 'Nail Services', desc: 'Manicure, pedicure & hand-painted art', icon: 'color-palette', active: true },
       { id: 'c5', name: 'Saree Draping', desc: 'Traditional & contemporary styling', icon: 'ribbon', active: true },
       { id: 'c6', name: 'Waxing / Hair Removal', desc: 'Precision waxing & smooth skin care', icon: 'leaf', active: true },
@@ -55,6 +55,10 @@ export function seed(): DB {
     reviews: [],
     favourites: [],
     notifs: [],
+    events: [],
+    reports: [],
+    conversations: [],
+    messages: [],
   };
 
   const mkUser = (id: string, role: 'customer' | 'provider' | 'admin', email: string, name: string, phone: string, area: string) => {
@@ -215,7 +219,7 @@ export function seed(): DB {
   PF('p8', 'Classic Lash Set', 'lash', 2, 'Complete look — brows + lashes');
   PF('p8', 'Microblading', 'brow', 3, 'Symmetry mapping session');
 
-  const bk = (customerId: string, providerId: string, serviceId: string, off: number, start: string, status: string, notes: string) => {
+  const bk = (customerId: string, providerId: string, serviceId: string, off: number, start: string, status: BookingStatus, notes: string) => {
     const s = db.services.find((x) => x.id === serviceId)!;
     const off2 = nextWorkDayOffset(providerId, off);
     const date = dISO(addDays(new Date(), off2));
@@ -226,7 +230,9 @@ export function seed(): DB {
       customerId, providerId, serviceId, date, start, end,
       price: s.price,
       location: s.locationType === 'customer' ? (u ? u.area : 'Customer location') : 'Provider studio',
-      locType: s.locationType, notes: notes || '', status, payment: 'Pay after service',
+      locType: s.locationType, notes: notes || '', status,
+      payment: status === 'completed' ? 'Paid (mock)' : 'Pay after service',
+      paymentStatus: status === 'completed' ? 'mock_paid' : 'unpaid',
       createdAt: Date.now() + off2 * 864e5 - 36e5, updatedAt: Date.now() + off2 * 864e5,
     });
   };
@@ -276,6 +282,104 @@ export function seed(): DB {
   NT('umaya', 'booking_confirmed', 'Booking confirmed', 'Aina Lash Studio confirmed your Russian Volume Lash Set today at 15:00.', -3, false);
   NT('umaya', 'review_reminder', 'Share your experience', 'Enjoyed your Lash Fill? Leave a quick review for Aina Lash Studio.', -5, false);
   NT('umaya', 'booking_completed', 'Booking completed', 'Your Saree Draping — Ceremony with Priya was marked completed.', -4, true);
+
+  /* ================= messaging seed (PRD Phase 13) ================= */
+  const CONV = (id: string, customerId: string, providerId: string, bookingId: string | null, hoursAgo: number) => {
+    db.conversations.push({ id, customerId, providerId, bookingId, createdAt: Date.now() - hoursAgo * 36e5, lastAt: Date.now() - hoursAgo * 36e5 });
+    return id;
+  };
+  const MSG = (conversationId: string, senderId: string, body: string, hoursAgo: number, read: boolean) => {
+    db.messages.push({
+      id: uid('m'), conversationId, senderId, body,
+      readBy: read ? ['umaya', 'ulina', 'ucindy', 'uaina', 'umelissa', 'umei'] : [senderId],
+      createdAt: Date.now() - hoursAgo * 36e5,
+    });
+    const c = db.conversations.find((x) => x.id === conversationId);
+    if (c) c.lastAt = Math.max(c.lastAt, Date.now() - hoursAgo * 36e5);
+  };
+
+  CONV('cv1', 'umaya', 'p1', db.bookings[0].id, 30);
+  MSG('cv1', 'umaya', 'Hi Aina! I booked the Russian volume set for Saturday — is parking available nearby?', 29, true);
+  MSG('cv1', 'uaina', 'Hi Maya! Yes, there is covered parking at the back, entrance B. See you Saturday ✨', 28, true);
+  MSG('cv1', 'umaya', 'Perfect. My eyes are quite sensitive — is the adhesive fume-free?', 5, true);
+  MSG('cv1', 'uaina', 'I use a low-fume sensitive adhesive. Avoid caffeine beforehand and come with clean, makeup-free lashes.', 4, true);
+
+  CONV('cv2', 'ulina', 'p2', db.bookings[7].id, 52);
+  MSG('cv2', 'ulina', 'Hi! Do you have any slots left this week for a gel manicure?', 51, true);
+  MSG('cv2', 'umelissa', 'Yes — Thursday 12:00 and 15:30 are still open. Shall I hold one for you?', 50, true);
+  MSG('cv2', 'ulina', 'Thursday 12:00 please 💅', 49, true);
+
+  CONV('cv3', 'ucindy', 'p6', null, 3);
+  MSG('cv3', 'ucindy', 'Hi Mei — do you travel to Bangsar for the hand-painted nail art set?', 3, false);
+  MSG('cv3', 'ucindy', 'Happy to pay the travel fee if it is within your service area.', 2.5, false);
+
+  /* ================= moderation seed (PRD Phase 15) ================= */
+  const repPortfolio = db.portfolio.find((x) => x.providerId === 'p6');
+  db.reports.push(
+    {
+      id: uid('rep'), reporterId: 'ucindy', targetType: 'portfolio', targetId: repPortfolio ? repPortfolio.id : 'pf-missing',
+      providerId: 'p6', reason: 'Photos do not match the actual work',
+      detail: 'The portfolio shows chrome art but the artist delivered a plain gel set.',
+      status: 'open', resolution: '', createdAt: Date.now() - 26 * 36e5, resolvedAt: null,
+    },
+    {
+      id: uid('rep'), reporterId: 'unadia', targetType: 'provider', targetId: 'p8', providerId: 'p8',
+      reason: 'Price changed after booking',
+      detail: 'Quoted RM170 for classic lashes, then asked for RM220 on arrival.',
+      status: 'open', resolution: '', createdAt: Date.now() - 9 * 36e5, resolvedAt: null,
+    },
+    {
+      id: uid('rep'), reporterId: 'ulina', targetType: 'review', targetId: db.reviews[0].id, providerId: 'p1',
+      reason: 'Suspected fake review', detail: 'Same wording as another review on the same profile.',
+      status: 'dismissed', resolution: 'Checked — two different customers, no action needed.',
+      createdAt: Date.now() - 60 * 36e5, resolvedAt: Date.now() - 55 * 36e5,
+    }
+  );
+
+  /* ================= analytics seed (PRD §16) =================
+     Synthesises a believable funnel over the seeded bookings so marketplace
+     metrics (conversion, acceptance, cancellation, completion, repeat rate)
+     are non-trivial on day one. Timestamps sit just before each booking. */
+  const EV = (name: AnalyticsEventName, actorId: string, hoursAgo: number, providerId?: string, bookingId?: string, meta?: Record<string, string | number | boolean>) => {
+    const actor = db.users.find((u) => u.id === actorId);
+    db.events.push({ id: uid('ev'), name, actorId, role: actor ? actor.role : 'system', providerId, bookingId, meta, createdAt: Date.now() - hoursAgo * 36e5 });
+  };
+
+  const CATS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'];
+  const CUSTOMERS = ['umaya', 'ulina', 'ucindy', 'unadia'];
+  db.bookings.forEach((b, i) => {
+    const t = 90 + i * 7;
+    EV('category_view', b.customerId, t + 6, b.providerId);
+    EV('search', b.customerId, t + 5, b.providerId, undefined, { q: 'lash' });
+    EV('provider_view', b.customerId, t + 4, b.providerId);
+    EV('service_view', b.customerId, t + 3, b.providerId, undefined, { price: b.price });
+    EV('booking_started', b.customerId, t + 2, b.providerId);
+    EV('booking_created', b.customerId, t + 1, b.providerId, b.id, { price: b.price });
+    EV('booking_received', b.providerId === 'p1' ? 'uaina' : b.providerId === 'p2' ? 'umelissa' : 'upriya', t + 1, b.providerId, b.id);
+    if (b.status !== 'pending' && b.status !== 'rejected') {
+      EV('booking_accepted', b.providerId === 'p1' ? 'uaina' : b.providerId === 'p2' ? 'umelissa' : 'upriya', t, b.providerId, b.id);
+    }
+    if (b.status === 'completed') {
+      EV('booking_completed', b.customerId, t - 40, b.providerId, b.id, { price: b.price });
+      EV('review_submitted', b.customerId, t - 36, b.providerId, b.id);
+    }
+    if (b.status === 'cancelled') EV('booking_cancelled', b.customerId, t - 5, b.providerId, b.id);
+  });
+  // Browsing that did not convert, so funnel rates stay realistic.
+  CUSTOMERS.forEach((cid, i) => {
+    EV('category_view', cid, 40 + i * 9, undefined, undefined, { cat: CATS[i % CATS.length] });
+    EV('provider_view', cid, 38 + i * 9, i % 2 ? 'p5' : 'p7');
+    EV('favourite_added', cid, 36 + i * 9, i % 2 ? 'p5' : 'p7');
+  });
+  EV('provider_view', 'unadia', 20, 'p8');
+  EV('service_view', 'unadia', 19, 'p8');
+  EV('signup', 'unadia', 200);
+  EV('provider_signup', 'uzul', 260);
+  EV('profile_completed', 'uzul', 258, 'p8');
+  EV('service_created', 'uzul', 256, 'p8');
+  EV('availability_created', 'uzul', 255, 'p8');
+  db.events.sort((a, b) => b.createdAt - a.createdAt);
+
 
   return db;
 }

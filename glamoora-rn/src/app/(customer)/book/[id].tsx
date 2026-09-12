@@ -1,15 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { LocBadge } from '../../components/cards';
-import { TopBar } from '../../components/topbar';
-import { Btn, Card, Chip, Note, Row } from '../../components/ui';
-import { activeServicesOf, createBooking, providerSlots, profileOf, serviceOf } from '../../db/core';
-import { AREAS } from '../../data/seed';
-import { useApp } from '../../store';
-import { C } from '../../theme';
-import { addDays, addMin, dISO, fmtDate, fmtDateLong, fmtRM, parseISO } from '../../utils';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Pressable, ScrollView, Text, TextInput, View, type TextStyle } from 'react-native';
+import { LocBadge } from '../../../components/cards';
+import { TopBar } from '../../../components/topbar';
+import { Btn, Card, Chip, Note, Row } from '../../../components/ui';
+import { activeServicesOf, createBooking, providerSlots, profileOf, serviceOf } from '../../../db/core';
+import { AREAS } from '../../../data/seed';
+import { useApp } from '../../../store';
+import { C } from '../../../theme';
+import { addDays, addMin, dISO, fmtDate, fmtDateLong, fmtRM, parseISO } from '../../../utils';
 
 export default function BookScreen() {
   const { id, svc: svcParam } = useLocalSearchParams<{ id: string; svc?: string }>();
@@ -23,9 +23,23 @@ export default function BookScreen() {
   const [loc, setLoc] = useState<'studio' | 'home'>('studio');
   const [locArea, setLocArea] = useState<string>(app.user?.area || AREAS[0].name);
   const [err, setErr] = useState<string | null>(null);
-  const u = app.user!;
+  const u = app.user;
 
   const svc = serviceOf(serviceId);
+
+  useEffect(() => {
+    if (!id) return;
+    app.track('booking_started', { studio: p?.displayName || '' }, { providerId: id });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  useEffect(() => {
+    if (!serviceId) return;
+    const s = serviceOf(serviceId);
+    app.track('service_view', { name: s?.name || '', price: s?.price || 0 }, { providerId: id });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serviceId]);
+
   const days = useMemo(() => Array.from({ length: 14 }, (_, i) => addDays(new Date(), i)), []);
   const openOn = (dow: number) => {
     if (!p) return false;
@@ -33,7 +47,7 @@ export default function BookScreen() {
     return list.length > 0;
   };
 
-  if (!p) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
+  if (!p || !u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
 
   const slots = date && svc ? providerSlots(p.id, svc.id, date) : [];
 
@@ -169,7 +183,7 @@ export default function BookScreen() {
                 onChangeText={setNotes}
               />
             </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1.5, borderTopStyle: 'dashed', borderTopColor: C.line2, marginTop: 12, paddingTop: 12 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1.5, borderStyle: 'dashed', borderTopColor: C.line2, marginTop: 12, paddingTop: 12 }}>
               <Row style={{ gap: 6 }}>
                 <Ionicons name="wallet-outline" size={15} color={C.ink3} />
                 <Text style={{ color: C.ink3, fontSize: 12 }}>Payment</Text>
@@ -209,7 +223,7 @@ function AreaPicker({ value, onChange }: { value: string; onChange: (v: string) 
         <Ionicons name="chevron-down" size={16} color={C.ink3} />
       </Pressable>
       {open ? (
-        <View style={{ position: 'absolute', top: 50, left: 0, right: 0, backgroundColor: C.white, borderRadius: 12, borderWidth: 1, borderColor: C.line, zIndex: 30, maxHeight: 220, shadowColor: C.plum, shadowOpacity: 0.15, shadowRadius: 10, elevation: 8 }}>
+        <View style={{ position: 'absolute', top: 50, left: 0, right: 0, backgroundColor: C.white, borderRadius: 12, borderWidth: 1, borderColor: C.line, zIndex: 30, maxHeight: 220, boxShadow: '0 4px 10px rgba(74,50,56,0.15)' }}>
           <ScrollView>
             {AREAS.map((a) => (
               <Pressable key={a.name} onPress={() => { onChange(a.name); setOpen(false); }} style={{ paddingHorizontal: 13, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: C.line }}>
@@ -222,4 +236,4 @@ function AreaPicker({ value, onChange }: { value: string; onChange: (v: string) 
     </View>
   );
 }
-const flbl = { fontSize: 11.5, fontWeight: '700', color: C.ink2, textTransform: 'uppercase' as const, letterSpacing: 0.6, marginBottom: 8 };
+const flbl: TextStyle = { fontSize: 11.5, fontWeight: '700', color: C.ink2, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 };

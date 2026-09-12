@@ -1,19 +1,23 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { PGrid, ServiceRow, VerifiedTick } from '../../components/cards';
-import { TopBar } from '../../components/topbar';
-import { Avatar, Card, Chip, Empty, Pill, Row, Sp, Stars } from '../../components/ui';
-import { activeServicesOf, availMap, catOf, isFav, me, providerSlots, profileOf, reviewsOf, toggleFavourite, userById } from '../../db/core';
-import { useApp } from '../../store';
-import { C } from '../../theme';
-import { addDays, dISO, haversine, parseISO, timeAgo, todayISO } from '../../utils';
+import { PGrid, PortfolioTile, ServiceRow, VerifiedTick } from '../../../components/cards';
+import { ReportLink, ReportSheet, type ReportRequest } from '../../../components/report';
+import { openThread } from '../../../components/chat';
+import { TopBar } from '../../../components/topbar';
+import { Avatar, Card, Chip, Empty, Pill, Row, Sp, Stars } from '../../../components/ui';
+import { activeServicesOf, availMap, catOf, isFav, me, providerSlots, profileOf, reviewsOf, serviceOf, toggleFavourite, userById } from '../../../db/core';
+import { useApp } from '../../../store';
+import { C } from '../../../theme';
+import { addDays, dISO, haversine, parseISO, timeAgo, todayISO } from '../../../utils';
 
 export default function ProviderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const app = useApp();
   const [tab, setTab] = useState<'services' | 'portfolio' | 'reviews' | 'hours'>('services');
+  const [report, setReport] = useState<ReportRequest | null>(null);
+  const [lightbox, setLightbox] = useState<number | null>(null);
   const p = profileOf(id);
   const appVersion = app.version;
 
@@ -28,8 +32,14 @@ export default function ProviderScreen() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, app.db, appVersion]);
-  if (!p || !data) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
-  const u = me()!;
+  useEffect(() => {
+    if (id) app.track('provider_view', { name: p?.displayName || '' }, { providerId: id });
+    // Fire once per profile opened, not on every re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  const u = me();
+  if (!p || !data || !u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   const fav = u.role === 'customer' && isFav(u.id, p.id);
   const suspended = p.verification === 'suspended';
 
@@ -67,6 +77,22 @@ export default function ProviderScreen() {
                 <Ionicons name={fav ? 'heart' : 'heart-outline'} size={18} color={fav ? C.brand : C.brand700} />
               </Pressable>
             )}
+            {u.role === 'customer' && !suspended ? (
+              <Pressable
+                onPress={() => openThread(u.id, p.id)}
+                style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: C.plum, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Ionicons name="chatbubble-ellipses-outline" size={17} color={C.white} />
+              </Pressable>
+            ) : null}
+            {u.role === 'customer' && !suspended ? (
+              <Pressable
+                onPress={() => setReport({ targetType: 'provider', targetId: p.id, label: p.displayName })}
+                style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: C.white, borderWidth: 1.5, borderColor: C.line2, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Ionicons name="flag-outline" size={17} color={C.ink3} />
+              </Pressable>
+            ) : null}
             <Card flush style={{ padding: 10 }}>
               <Text style={{ fontSize: 12.5, color: C.ink2, fontWeight: '600' }}>
                 {data.am[parseISO(todayISO()).getDay()] ? 'Open today' : 'Closed today'}
@@ -99,7 +125,7 @@ export default function ProviderScreen() {
               )}
             </Card>
           ) : tab === 'portfolio' ? (
-            data.port.length ? <PGrid items={data.port} /> : <Empty icon="images-outline" title="No portfolio yet" text="Work samples will appear here." />
+            data.port.length ? <PGrid items={data.port} onItem={(i) => setLightbox(i)} /> : <Empty icon="images-outline" title="No portfolio yet" text="Work samples will appear here." />
           ) : tab === 'reviews' ? (
             <View>
               <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 12 }}>
@@ -123,6 +149,11 @@ export default function ProviderScreen() {
                           <Text style={{ color: C.ink3, fontSize: 11 }}>{timeAgo(r.createdAt)}</Text>
                         </Row>
                         {r.comment ? <Text style={{ fontSize: 12.5, color: C.ink2, marginTop: 5 }}>{r.comment}</Text> : null}
+                        {u.role === 'customer' && r.customerId !== u.id ? (
+                          <View style={{ marginTop: 7, alignSelf: 'flex-end' }}>
+                            <ReportLink onPress={() => setReport({ targetType: 'review', targetId: r.id, label: `${r.rating}-star review on ${p.displayName}` })} />
+                          </View>
+                        ) : null}
                       </View>
                     );
                   })}
@@ -133,7 +164,7 @@ export default function ProviderScreen() {
             </View>
           ) : (
             <Card flush>
-              {Array.from({ length: 7 }, (_, i) => addDays(new Date(), i)).map((d) => {
+              {Array.from({ length: 7 }, (_, i) => addDays(new Date(), i)).map((d, i) => {
                 const iso = dISO(d);
                 const w = data.am[d.getDay()];
                 const name = i === 0 ? 'Today' : parseISO(iso).toLocaleDateString('en-MY', { weekday: 'long' });
@@ -157,6 +188,38 @@ export default function ProviderScreen() {
           )}
         </View>
       </ScrollView>
+
+      {lightbox !== null && data.port[lightbox] ? (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 150, backgroundColor: 'rgba(40,22,27,0.72)', justifyContent: 'center', padding: 22 }}>
+          <Pressable style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} onPress={() => setLightbox(null)} />
+          <View style={{ alignItems: 'center' }}>
+            <View style={{ width: '100%', maxWidth: 320 }}>
+              <PortfolioTile item={data.port[lightbox]} />
+            </View>
+            <Text style={{ color: C.white, fontSize: 13.5, marginTop: 12, textAlign: 'center' }}>
+              {data.port[lightbox].caption || p.displayName}
+            </Text>
+            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11.5, marginTop: 3 }}>
+              {serviceOf(data.port[lightbox].serviceId)?.name || p.displayName}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 9, marginTop: 16 }}>
+              <Pressable onPress={() => setLightbox(null)} style={{ backgroundColor: 'rgba(255,255,255,0.16)', borderRadius: 11, paddingHorizontal: 16, paddingVertical: 9 }}>
+                <Text style={{ color: C.white, fontSize: 12.5, fontWeight: '700' }}>Close</Text>
+              </Pressable>
+              {u.role === 'customer' ? (
+                <Pressable
+                  onPress={() => { const it = data.port[lightbox]; setLightbox(null); setReport({ targetType: 'portfolio', targetId: it.id, label: it.caption || p.displayName }); }}
+                  style={{ backgroundColor: C.white, borderRadius: 11, paddingHorizontal: 16, paddingVertical: 9 }}
+                >
+                  <Text style={{ color: C.red, fontSize: 12.5, fontWeight: '700' }}>Report artwork</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          </View>
+        </View>
+      ) : null}
+
+      {report ? <ReportSheet request={report} onClose={() => setReport(null)} /> : null}
     </View>
   );
 }

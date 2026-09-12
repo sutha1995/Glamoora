@@ -34,7 +34,6 @@ export default function CustomerLayout() {
       <Tabs.Screen name="book/[id]" options={{ href: null, headerShown: false }} />
       <Tabs.Screen name="book-success/[id]" options={{ href: null, headerShown: false }} />
       <Tabs.Screen name="review/[id]" options={{ href: null, headerShown: false }} />
-      <Tabs.Screen name="notifications" options={{ href: null, headerShown: false }} />
     </Tabs>
   );
 }

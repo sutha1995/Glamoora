@@ -27,7 +27,38 @@ const webStore = {
   },
 };
 
-const backend = Platform.OS === 'web' ? webStore : AsyncStorage;
+/** Normalised key/value adapter — AsyncStorage exposes getItem/setItem/removeItem. */
+interface KV {
+  get(): Promise<string | null>;
+  set(s: string): Promise<void>;
+  del(): Promise<void>;
+}
+
+const nativeStore: KV = {
+  async get() {
+    try {
+      return await AsyncStorage.getItem(LSKEY);
+    } catch {
+      return null;
+    }
+  },
+  async set(s: string) {
+    try {
+      await AsyncStorage.setItem(LSKEY, s);
+    } catch {
+      /* ignore */
+    }
+  },
+  async del() {
+    try {
+      await AsyncStorage.removeItem(LSKEY);
+    } catch {
+      /* ignore */
+    }
+  },
+};
+
+const backend: KV = Platform.OS === 'web' ? webStore : nativeStore;
 
 export async function loadRaw(): Promise<string | null> {
   try {

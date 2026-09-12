@@ -5,6 +5,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { TopBar } from '../../components/topbar';
 import { Avatar, Btn, Card, Empty, Pill, Row, Seg } from '../../components/ui';
 import { profileOf, serviceOf, setBookingStatus } from '../../db/core';
+import { openThreadForBooking } from '../../components/chat';
 import { useApp } from '../../store';
 import { C } from '../../theme';
 import { fmtDate, fmtRM, todayISO } from '../../utils';
@@ -15,7 +16,8 @@ export default function BookingsScreen() {
   const app = useApp();
   const [tab, setTab] = useState<Tab>('upcoming');
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
-  const u = app.user!;
+  const u = app.user;
+  if (!u) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
 
   const list = app.db.bookings
     .filter((b) => b.customerId === u.id)
@@ -62,6 +64,11 @@ export default function BookingsScreen() {
                   <Meta icon="location-outline" text={(b.location || '').split(',')[0]} />
                 </View>
                 <Text style={{ fontSize: 11, color: C.ink3, marginTop: 7 }}>Ref {b.ref} · {b.payment}</Text>
+                {['pending', 'confirmed'].includes(b.status) ? (
+                  <Text style={{ fontSize: 11, color: C.ink3, marginTop: 3 }}>
+                    Free cancellation any time before your appointment — the slot is released instantly.
+                  </Text>
+                ) : null}
                 <View style={{ flexDirection: 'row', gap: 7, marginTop: 8 }}>
                   {['pending', 'confirmed'].includes(b.status) && (
                     <Btn label="Cancel" variant="d" size="sm" block onPress={() => setConfirmCancel(b.id)} />
@@ -73,6 +80,9 @@ export default function BookingsScreen() {
                     <View style={{ flex: 1, alignItems: 'center', backgroundColor: C.plum, borderRadius: 10, paddingVertical: 8 }}>
                       <Text style={{ color: C.white, fontSize: 12, fontWeight: '700' }}>Reviewed ★ {reviewed.rating}</Text>
                     </View>
+                  )}
+                  {p && !['cancelled', 'rejected'].includes(b.status) && (
+                    <Btn label="Message" variant="o" size="sm" block icon="chatbubble-ellipses-outline" onPress={() => openThreadForBooking(b)} />
                   )}
                   {p && (
                     <Btn label="View" variant="o" size="sm" block onPress={() => router.push({ pathname: '/provider/[id]', params: { id: p.id } })} />
@@ -100,7 +110,7 @@ export default function BookingsScreen() {
 
       {confirmCancel ? (
         <View style={{ ...StyleSheet_overlay }}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => setConfirmCancel(null)} />
+          <Pressable style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} onPress={() => setConfirmCancel(null)} />
           <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: C.bg, borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 18, paddingBottom: 30 }}>
             <Text style={{ fontFamily: 'serif', fontSize: 17, color: C.plum, marginBottom: 10 }}>Cancel booking?</Text>
             <Text style={{ color: C.ink2, fontSize: 13.5, marginBottom: 14 }}>The provider will be notified and the time slot released. This cannot be undone.</Text>
@@ -132,4 +142,4 @@ function Meta({ icon, text }: { icon: keyof typeof Ionicons.glyphMap; text: stri
     </View>
   );
 }
-const StyleSheet_overlay = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, backgroundColor: 'rgba(40,22,27,0.5)' } as const;
+const StyleSheet_overlay: import('react-native').ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, backgroundColor: 'rgba(40,22,27,0.5)' };

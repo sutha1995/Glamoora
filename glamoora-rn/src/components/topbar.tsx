@@ -3,7 +3,7 @@ import { router, usePathname } from 'expo-router';
 import React from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { me, unreadCount } from '../db/core';
+import { repo } from '../db';
 import { C } from '../theme';
 
 export function TopBar({
@@ -16,7 +16,29 @@ export function TopBar({
   right?: React.ReactNode;
 }) {
   const path = usePathname();
-  const u = me();
+  const u = repo.me();
+  const inThread = path.startsWith('/chat') || path === '/messages';
+  const unreadMsgs = u ? repo.unreadMessages(u.id) : 0;
+  const chat = () =>
+    u && !inThread ? (
+      <Pressable
+        onPress={() => router.push('/messages')}
+        style={{ position: 'relative', width: 38, height: 38, borderRadius: 12, backgroundColor: C.brand50, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Ionicons name="chatbubble-ellipses-outline" size={19} color={C.plum} />
+        {unreadMsgs > 0 && (
+          <View
+            style={{
+              position: 'absolute', top: 4, right: 4, minWidth: 16, height: 16, borderRadius: 8,
+              backgroundColor: C.green, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
+              borderWidth: 2, borderColor: C.bg,
+            }}
+          >
+            <Text style={{ color: C.white, fontSize: 9.5, fontWeight: '700' }}>{unreadMsgs > 9 ? '9+' : unreadMsgs}</Text>
+          </View>
+        )}
+      </Pressable>
+    ) : null;
   const bell = () =>
     u ? (
       <Pressable
@@ -24,7 +46,7 @@ export function TopBar({
         style={{ position: 'relative', width: 38, height: 38, borderRadius: 12, backgroundColor: C.brand50, alignItems: 'center', justifyContent: 'center' }}
       >
         <Ionicons name="notifications-outline" size={20} color={C.plum} />
-        {unreadCount(u.id) > 0 && (
+        {repo.unreadCount(u.id) > 0 && (
           <View
             style={{
               position: 'absolute', top: 4, right: 4, minWidth: 16, height: 16, borderRadius: 8,
@@ -32,7 +54,7 @@ export function TopBar({
               borderWidth: 2, borderColor: C.bg,
             }}
           >
-            <Text style={{ color: C.white, fontSize: 9.5, fontWeight: '700' }}>{unreadCount(u.id) > 9 ? '9+' : unreadCount(u.id)}</Text>
+            <Text style={{ color: C.white, fontSize: 9.5, fontWeight: '700' }}>{repo.unreadCount(u.id) > 9 ? '9+' : repo.unreadCount(u.id)}</Text>
           </View>
         )}
       </Pressable>
@@ -58,12 +80,13 @@ export function TopBar({
         {title ? (
           <View style={{ flex: 1 }}>
             <Text style={{ fontFamily: 'serif', fontSize: 16, color: C.plum, flexShrink: 1 }} numberOfLines={1}>{title}</Text>
-            {sub ? <Text style={{ fontSize: 11, color: C.ink3, numberOfLines: 1 }}>{sub}</Text> : null}
+            {sub ? <Text style={{ fontSize: 11, color: C.ink3 }} numberOfLines={1}>{sub}</Text> : null}
           </View>
         ) : (
           <View style={{ flex: 1 }} />
         )}
         {right}
+        {chat()}
         {u && path !== '/notifications' && bell()}
       </View>
     </SafeAreaView>

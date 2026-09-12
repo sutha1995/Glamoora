@@ -4,32 +4,59 @@ import { StatusBar } from 'expo-status-bar';
 import { AppProvider, useApp } from '../store';
 import { C } from '../theme';
 
+/**
+ * Route guard.
+ *
+ * `useSegments()` returns *URL* segments — group folders like `(customer)` are
+ * stripped — so `['provider', 'p1']` is a customer opening a studio profile and
+ * `['admin']` is the console. Roles are enforced by top-level URL segment.
+ */
+const PUBLIC_ROUTES = new Set(['', 'auth']);
+const SHARED_ROUTES = new Set(['notifications', 'messages', 'chat', 'assistant']);
+const CUSTOMER_ROUTES = new Set([
+  'home', 'discover', 'bookings', 'favourites', 'profile',
+  'provider', 'book', 'book-success', 'review',
+]);
+const PROVIDER_ROUTES = new Set(['dashboard', 'calendar', 'services', 'hours', 'studio', 'settings']);
+const ADMIN_ROUTES = new Set(['admin']);
+
+function allowedRoutes(role: string): Set<string> {
+  if (role === 'provider') return PROVIDER_ROUTES;
+  if (role === 'admin') return ADMIN_ROUTES;
+  return CUSTOMER_ROUTES;
+}
+
+function homeFor(role: string | undefined): '/home' | '/dashboard' | '/admin' | '/auth' {
+  if (!role) return '/auth';
+  if (role === 'provider') return '/dashboard';
+  if (role === 'admin') return '/admin';
+  return '/home';
+}
+
 function RootNavigator() {
   const { ready, user } = useApp();
-  const segments = useSegments();
+  const segments = useSegments() as unknown as string[];
   const router = useRouter();
+  const root = segments[0] ?? '';
 
   useEffect(() => {
     if (!ready) return;
-    const seg0 = segments[0] || '';
-    const inGroup = segments[1] || '';
-    if (!user) {
-      if (seg0 !== 'auth') router.replace('/auth');
+    const role = user?.role;
+    const home = homeFor(role);
+
+    if (!role) {
+      if (!PUBLIC_ROUTES.has(root) && !SHARED_ROUTES.has(root)) router.replace('/auth');
       return;
     }
-    const home = user.role === 'provider' ? '/dashboard' : user.role === 'admin' ? '/admin' : '/home';
-    const isHome =
-      (user.role === 'customer' && (inGroup === 'home' || inGroup === 'discover' || inGroup === 'bookings' || inGroup === 'favourites' || inGroup === 'profile' || inGroup === 'notifications' || inGroup === 'provider' || inGroup === 'book' || inGroup === 'review' || inGroup === 'book-success')) ||
-      (user.role === 'provider' && (inGroup === 'dashboard' || inGroup === 'calendar' || inGroup === 'services' || inGroup === 'hours' || inGroup === 'studio' || inGroup === 'settings' || inGroup === 'notifications')) ||
-      (user.role === 'admin' && seg0 === 'admin');
-    if (!user && seg0 === 'auth') return;
-    if (user && (seg0 === 'auth' || seg0 === '' || seg0 === 'index')) router.replace(home);
-    if (user && seg0 !== 'auth' && !isHome) {
-      // role mismatch (e.g. provider on customer tab) — send to their home
-      if (user.role === 'provider' && inGroup !== 'dashboard' && inGroup !== 'calendar' && inGroup !== 'services' && inGroup !== 'hours' && inGroup !== 'studio' && inGroup !== 'settings' && inGroup !== 'notifications') router.replace(home);
-      if (user.role === 'customer' && inGroup === 'dashboard') router.replace(home);
+    // Signed-in users may open notifications/messages/chat regardless of role.
+    if (SHARED_ROUTES.has(root)) return;
+    // index + auth hand off to the role's home once a session exists.
+    if (PUBLIC_ROUTES.has(root)) {
+      router.replace(home);
+      return;
     }
-  }, [ready, user, segments, router]);
+    if (!allowedRoutes(role).has(root)) router.replace(home);
+  }, [ready, user, root, router]);
 
   return (
     <Stack
@@ -43,7 +70,9 @@ function RootNavigator() {
       <Stack.Screen name="auth" />
       <Stack.Screen name="(customer)" />
       <Stack.Screen name="(provider)" />
-      <Stack.Screen name="(admin)" />
+      {/* (shared) and (admin) have no layout of their own, so their screens are
+          hoisted into this navigator as `(shared)/messages`, `(admin)/admin`, …
+          Declaring the bare group names here would warn about missing routes. */}
     </Stack>
   );
 }

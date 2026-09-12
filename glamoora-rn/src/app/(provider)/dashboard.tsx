@@ -3,11 +3,20 @@ import { router } from 'expo-router';
 import React, { useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { TopBar } from '../../components/topbar';
-import { Btn, Card, Pill, Row, SectionTitle, Sp, StatBox } from '../../components/ui';
+import { Btn, Card, Chip, Pill, Row, SectionTitle, Sp, StatBox } from '../../components/ui';
 import { activeServicesOf, profileOf, serviceOf, setBookingStatus, userById } from '../../db/core';
+import { openThreadForBooking } from '../../components/chat';
 import { useApp } from '../../store';
 import { C } from '../../theme';
 import { fmtDate, fmtRM, todayISO } from '../../utils';
+
+const AI_TOOLS = [
+  { tool: 'describe', label: '✍️ Service description' },
+  { tool: 'caption', label: '🖼️ Portfolio caption' },
+  { tool: 'bundle', label: '🎁 Bundle ideas' },
+  { tool: 'reviews', label: '⭐ Review summary' },
+  { tool: 'score', label: '📈 Profile strength' },
+];
 
 export default function DashboardScreen() {
   const app = useApp();
@@ -75,6 +84,9 @@ export default function DashboardScreen() {
                 <Btn label="Cancel" variant="d" size="xs" block onPress={() => act(b.id, 'cancel')} />
               </>
             )}
+            {!['cancelled', 'rejected'].includes(b.status) && (
+              <Btn label="Message" variant="o" size="xs" block icon="chatbubble-ellipses-outline" onPress={() => openThreadForBooking(b)} />
+            )}
           </View>
         ) : null}
       </View>
@@ -106,6 +118,28 @@ export default function DashboardScreen() {
           <StatBox value={fmtRM(data.earnings)} label="This month" small />
           <StatBox value={'★ ' + p.avg.toFixed(1)} label="Rating" />
         </View>
+
+        <Card style={{ marginBottom: 14, backgroundColor: C.brand50, borderColor: C.brand100 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: C.white, alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name="sparkles" size={18} color={C.brand700} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 13.5, fontWeight: '800', color: C.plum }}>AI studio assistant</Text>
+              <Text style={{ fontSize: 11, color: C.ink3, marginTop: 1, lineHeight: 15 }}>
+                Writes from your real prices, hours and reviews — on-device, nothing uploaded.
+              </Text>
+            </View>
+            <Btn label="Open" variant="p" size="xs" onPress={() => router.push('/assistant')} />
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+            {AI_TOOLS.map((t) => (
+              <Chip key={t.tool} onPress={() => router.push({ pathname: '/assistant', params: { tool: t.tool } })}>
+                {t.label}
+              </Chip>
+            ))}
+          </View>
+        </Card>
 
         <SectionTitle title="Needs your attention" />
         <Card style={{ marginBottom: 14 }}>
